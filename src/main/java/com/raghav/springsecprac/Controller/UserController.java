@@ -24,8 +24,8 @@ public class UserController {
 
     @PostMapping("/auth/login")
     public String login(@RequestBody Users users) {
-        System.out.println("LOGIN HIT");
-
+        System.out.println(userService.verify(users));
         return userService.verify(users);
     }
 }
+

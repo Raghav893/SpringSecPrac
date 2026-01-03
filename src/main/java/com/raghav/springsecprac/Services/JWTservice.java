@@ -16,37 +16,38 @@ import java.util.function.Function;
 
 @Service
 public class JWTservice {
-    private String secretkey = "";
+    private  String secretKey = "";
     public JWTservice(){
-
         try {
             KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
             SecretKey sk = keyGen.generateKey();
-            secretkey = Base64.getEncoder().encodeToString(sk.getEncoded());
+            secretKey=Base64.getEncoder().encodeToString(sk.getEncoded());
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-
-
     }
-    public String genrateToken(String username) {
-        Map<String, Objects> claims = new HashMap<>();
+
+    public String genrateToken(String Username) {
+
+        Map<String,Object> claims = new HashMap<>();
         return Jwts.builder()
                 .claims()
                 .add(claims)
-                .subject(username)
+                .subject(Username)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+60*60*30))
                 .and()
                 .signWith(getkey())
                 .compact();
+
+
     }
 
     private SecretKey getkey() {
-        byte[] keyBytes = Decoders.BASE64URL.decode(secretkey);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
-
     }
+
     public String extractUserName(String token) {
         // extract the username from jwt token
         return extractClaim(token, Claims::getSubject);
@@ -77,5 +78,6 @@ public class JWTservice {
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
+
 
 }

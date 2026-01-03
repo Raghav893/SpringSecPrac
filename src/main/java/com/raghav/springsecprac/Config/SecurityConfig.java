@@ -23,16 +23,31 @@ public class SecurityConfig {
     JwtFilter jwtFilter;
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    OAuth2SuccessHandler oAuth2SuccessHandler;
+    
     @Bean
     public SecurityFilterChain securityFilterChain  (HttpSecurity http) throws Exception {
         return http
-                .csrf(Customizer -> Customizer.disable())
+                .csrf(Customizer ->Customizer.disable())
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/login","/auth/register").permitAll()
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/register",
+                                "/oauth2/**",
+                                "/login/oauth2/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
-                .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+
+                .oauth2Login(Oauth ->Oauth.successHandler(oAuth2SuccessHandler))
+                .logout(logout ->logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler(((request, response, authentication) -> response.setStatus(200)))
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
